@@ -19,5 +19,6 @@ export enum TOKEN_VARIABLES {
 }
 
 export enum REQUESTS {
-  TOKEN = 'identity/realms/{realm}/protocol/openid-connect/token'
+  TOKEN = 'identity/realms/{realm}/protocol/openid-connect/token',
+  SEARCH = 'instruments/v1/instruments'
 }
