@@ -19,7 +19,7 @@ export class AppComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.requestsService.getToken().subscribe(() => {
+    this.requestsService.makeAuthenticatedRequest().subscribe(() => {
       this.requestsService.getInstruments().subscribe()
     });
 
