@@ -21,7 +21,7 @@ export class SearchComponent {
     this.requestService.symbol = query ? query.toUpperCase() : this.defaultSymbol;
 
     this.requestService.getInstruments().subscribe(results => {
-      this.searchResults = results;
+      this.searchResults = results.data;
     });
   }
 }

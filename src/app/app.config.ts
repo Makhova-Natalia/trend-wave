@@ -20,5 +20,6 @@ export enum TOKEN_VARIABLES {
 
 export enum REQUESTS {
   TOKEN = 'identity/realms/{realm}/protocol/openid-connect/token',
-  SEARCH = 'api/instruments/v1/instruments'
+  SEARCH = 'api/instruments/v1/instruments',
+  DATE_RANGE = 'api/bars/v1/bars/date-range'
 }
