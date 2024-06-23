@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
 import { Search } from "../../models/trend.model";
 
@@ -18,9 +18,9 @@ export class SearchComponent {
 
   onSearch(event: any) {
     const query = event.target.value.trim();
-    const symbol = query ? query.toUpperCase() : this.defaultSymbol;
+    this.requestService.symbol = query ? query.toUpperCase() : this.defaultSymbol;
 
-    this.requestService.getInstruments(symbol).subscribe(results => {
+    this.requestService.getInstruments().subscribe(results => {
       this.searchResults = results;
     });
   }
