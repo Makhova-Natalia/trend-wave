@@ -10,9 +10,9 @@ export interface Search {
 
 export interface DateRange {
   "t": string,
-  "o": number,
-  "h": number,
-  "l": number,
-  "c": number,
-  "v": number
+  "o": string,
+  "h": string,
+  "l": string,
+  "c": string,
+  "v": string
 }

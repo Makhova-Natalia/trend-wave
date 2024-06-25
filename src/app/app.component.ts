@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RequestsService } from "./services/requests.service";
 import { SearchComponent } from "./components/search/search.component";
 import { MarketDataComponent } from "./components/market-data/market-data.component";
-import { switchMap } from "rxjs";
+import { switchMap, tap } from "rxjs";
+import { DateRange } from "./models/trend.model";
 // import { RealTimeComponent } from "./components/real-time/real-time.component";
 // import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 
@@ -24,21 +25,15 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-  //   this.requestsService.makeAuthenticatedRequest().subscribe(() => {
-  //     this.requestsService.symbol = this.defaultSymbol;
-  //     this.requestsService.getInstruments().subscribe();
-  //     this.requestsService.getDateRange().subscribe()
-  //   });
     this.requestsService.makeAuthenticatedRequest().pipe(
       switchMap(() => {
         this.requestsService.symbol = this.defaultSymbol;
         return this.requestsService.getInstruments();
       }),
       switchMap(() => {
-        return this.requestsService.getDateRange();
+        return this.requestsService.getCurrentPrice();
       })
     ).subscribe(() => {
-      // Any further actions after both requests are complete
     });
   }
 }
