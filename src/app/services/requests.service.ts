@@ -15,6 +15,7 @@ export class RequestsService {
   private instruments$: BehaviorSubject<Search[]> = new BehaviorSubject<Search[]>([]);
   private price$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private time$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
 
   constructor(private readonly http: HttpClient) {
   }
@@ -41,6 +42,10 @@ export class RequestsService {
 
   get time(): Observable<string> {
     return this.time$.asObservable();
+  }
+
+  get historicalPrices(): Observable<DateRange[]> {
+    return this.historicalPrices$.asObservable();
   }
 
   private createParamsForToken() {
@@ -85,7 +90,7 @@ export class RequestsService {
         } else if (type === 'historicalPrices') {
           return params
             .set('periodicity', 'day')
-            .set('barsCount', '500');
+            .set('barsCount', '365');
         } else {
           throw new Error('Invalid type parameter');
         }
@@ -157,5 +162,13 @@ export class RequestsService {
           this.time$.next(response.data[0].t);
         }
       })));
+  }
+
+  getHistoricalPrices(): Observable<{ data: DateRange[] }> {
+    return this.getDateRange('historicalPrices').pipe(
+      tap(((response: { data: DateRange[] }) => {
+            this.historicalPrices$.next(response.data)
+        }))
+    );
   }
 }

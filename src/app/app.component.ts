@@ -6,7 +6,7 @@ import { MarketDataComponent } from "./components/market-data/market-data.compon
 import { switchMap, tap } from "rxjs";
 import { DateRange } from "./models/trend.model";
 // import { RealTimeComponent } from "./components/real-time/real-time.component";
-// import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
+import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,9 @@ import { DateRange } from "./models/trend.model";
   imports: [
     CommonModule,
     SearchComponent,
-    MarketDataComponent],
+    MarketDataComponent,
+    HistoricalChartComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -32,6 +34,9 @@ export class AppComponent implements OnInit {
       }),
       switchMap(() => {
         return this.requestsService.getCurrentPrice();
+      }),
+      switchMap(() => {
+        return this.requestsService.getHistoricalPrices();
       })
     ).subscribe(() => {
     });
