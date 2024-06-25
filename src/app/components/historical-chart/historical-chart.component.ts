@@ -71,6 +71,9 @@ export class HistoricalChartComponent implements OnInit {
               wheel: {
                 enabled: true,
               },
+              drag: {
+                enabled: true,
+              },
               pinch: {
                 enabled: true
               },
