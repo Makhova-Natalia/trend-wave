@@ -27,7 +27,7 @@ export class RealTimeComponent {
       console.log('WebSocket connection opened.');
       const message = {
         type: "l1-subscription",
-        instrumentId: "2d53c0f3-1489-4720-80d6-14ff2bdbb562",
+        instrumentId: this.requestsService.instrumentId,
         provider: "cryptoquote",
         kinds: ["last"],
         subscribe: true

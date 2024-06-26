@@ -89,6 +89,9 @@ export class HistoricalChartComponent implements OnInit {
           }
         },
         plugins: {
+          legend: {
+            display: false
+          },
           zoom: {
             zoom: {
               wheel: {

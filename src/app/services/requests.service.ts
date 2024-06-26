@@ -71,6 +71,10 @@ export class RequestsService {
     return this.pricesArr$.asObservable()
   }
 
+  get instrumentId(): string {
+    return this.instrumentId$.value;
+  }
+
   get token() {
     return this.token$.asObservable();
   }
@@ -123,11 +127,12 @@ export class RequestsService {
   private createParamsForDateRange(type: string): Observable<HttpParams> {
     return this.instrumentsArr.pipe(
       map((val: Search[]) => {
+        let instrument = this.instrumentId$.value ? this.instrumentId$.value : val[0].id;
+        this.instrumentId$.next(instrument);
         const params = new HttpParams()
-          .set('instrumentId', this.instrumentId$.value ? this.instrumentId$.value : val[0].id)
+          .set('instrumentId', instrument)
           .set('provider', 'cryptoquote')
           .set('interval', '1');
-
         if (type === 'currentPrice') {
           const currentDate = new Date().toISOString();
           return params
@@ -137,7 +142,7 @@ export class RequestsService {
         } else if (type === 'historicalPrices') {
           return params
             .set('periodicity', 'day')
-            .set('barsCount', '14');
+            .set('barsCount', '30');
         } else {
           throw new Error('Invalid type parameter');
         }
