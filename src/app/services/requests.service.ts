@@ -50,6 +50,14 @@ export class RequestsService {
     this.pricesArr$.next([...currentPrice, price]);
   }
 
+  set timesArr(arr: Date[]) {
+    this.timesArr$.next(arr)
+  }
+
+  set pricesArr(arr: string[]) {
+    this.pricesArr$.next(arr)
+  }
+
   get dates(): Observable<Date[]> {
     return this.timesArr$.asObservable();
   }
@@ -179,13 +187,14 @@ export class RequestsService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.token$.value}`
     });
+    let params: HttpParams = new HttpParams();
 
-    return this.createParamsForDateRange(type).pipe(
-      switchMap(params => {
-        const request = this.http.get<{ data: DateRange[] }>(`${URL}/${REQUESTS.DATE_RANGE}`, {headers, params})
-        return this.handleRequest(request);
-      })
-    )
+    this.createParamsForDateRange(type).subscribe(v => params = v);
+    const request = this.http.get<{ data: DateRange[] }>(`${URL}/${REQUESTS.DATE_RANGE}`, {headers, params});
+
+    return this.handleRequest(request);
+
+
   }
 
   getCurrentPrice(): Observable<{ data: DateRange[] }> {

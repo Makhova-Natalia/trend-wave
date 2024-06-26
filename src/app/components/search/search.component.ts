@@ -34,6 +34,8 @@ export class SearchComponent {
     this.defaultSymbol = result.symbol;
     this.requestService.symbol = result.symbol;
     this.requestService.instrumentId = result.id;
+    this.requestService.timesArr = [];
+    this.requestService.pricesArr = [];
     this.requestService.getCurrentPrice().subscribe();
     this.requestService.getHistoricalPrices().subscribe()
   }
