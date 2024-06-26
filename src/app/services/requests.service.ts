@@ -15,6 +15,8 @@ export class RequestsService {
   private instruments$: BehaviorSubject<Search[]> = new BehaviorSubject<Search[]>([]);
   private price$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private time$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private timesArr$: BehaviorSubject<Date[]> = new BehaviorSubject<Date[]>([]);
+  private pricesArr$: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
 
   constructor(private readonly http: HttpClient) {
@@ -31,6 +33,24 @@ export class RequestsService {
 
   set time(value: string) {
     this.time$.next(value);
+  }
+
+  set dates(date: Date) {
+    const currentTimes = this.timesArr$.value;
+    this.timesArr$.next([...currentTimes, date]);
+  }
+
+  set prices(price: string) {
+    const currentPrice = this.pricesArr$.value;
+    this.pricesArr$.next([...currentPrice, price]);
+  }
+
+  get dates(): Observable<Date[]> {
+    return this.timesArr$.asObservable();
+  }
+
+  get prices(): Observable<string[]> {
+    return this.pricesArr$.asObservable()
   }
 
   get token() {
@@ -99,7 +119,7 @@ export class RequestsService {
         } else if (type === 'historicalPrices') {
           return params
             .set('periodicity', 'day')
-            .set('barsCount', '365');
+            .set('barsCount', '14');
         } else {
           throw new Error('Invalid type parameter');
         }

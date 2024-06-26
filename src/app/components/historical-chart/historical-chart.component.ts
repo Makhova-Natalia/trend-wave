@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { RequestsService } from "../../services/requests.service";
 import { Chart, registerables } from "chart.js/auto";
-import { DateRange } from "../../models/trend.model";
 import 'chartjs-adapter-date-fns';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { tap } from "rxjs";
+import { DateRange } from "../../models/trend.model";
 
 Chart.register(zoomPlugin);
 
@@ -14,13 +15,12 @@ Chart.register(zoomPlugin);
   imports: [CommonModule],
   templateUrl: './historical-chart.component.html',
   styleUrl: './historical-chart.component.scss',
-  providers: [DatePipe]
 })
 export class HistoricalChartComponent implements OnInit {
   private symbol: string = '';
   chart: any;
 
-  constructor(private requestsService: RequestsService, private datePipe: DatePipe) {
+  constructor(private requestsService: RequestsService) {
     Chart.register(...registerables);
   }
 
@@ -28,15 +28,38 @@ export class HistoricalChartComponent implements OnInit {
     this.requestsService.symbol.subscribe(s => {
       this.symbol = s;
     })
-    this.requestsService.historicalPrices.subscribe((response: DateRange[]) => {
-      if (response.length) {
-        const times = response.map(data => new Date(data.t))
-        const prices = response.map(data => data.c);
-        this.createChart(times, prices)
-      }
 
-    })
+    this.requestsService.historicalPrices.pipe(
+      tap((response: DateRange[]) => {
+        if (response.length) {
+          const dates = response.map(data => {
+            this.requestsService.dates = new Date(data.t)
+            return new Date(data.t)
+          })
+          const prices = response.map(data => {
+            this.requestsService.prices = data.c
+            return data.c
+          });
+          this.updateChart(dates, prices)
+        }
+      })
+    ).subscribe(() => {})
 
+
+  }
+
+  private updateChart(times: Date[], prices: string[]): void {
+    if (this.chart) {
+      this.requestsService.dates.subscribe((dates) =>  {
+        this.chart.data.labels = dates
+      })
+      this.requestsService.prices.subscribe((prices) =>  {
+        this.chart.data.datasets[0].data = prices;
+      })
+      this.chart.update();
+    } else {
+      this.createChart(times, prices);
+    }
   }
 
   private createChart(times: Date[], prices: string[]) {

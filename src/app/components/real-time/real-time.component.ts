@@ -42,6 +42,8 @@ export class RealTimeComponent {
       if (data.type === "l1-update" && data.last) {
         this.requestsService.price = data.last.price;
         this.requestsService.time = data.last.timestamp;
+        this.requestsService.dates = new Date(data.last.timestamp);
+        this.requestsService.prices = data.last.price
       }
     };
 
