@@ -20,12 +20,21 @@ export class RequestsService {
   constructor(private readonly http: HttpClient) {
   }
 
-  get token() {
-    return this.token$.asObservable();
-  }
 
   set symbol(value: string) {
     this.symbol$.next(value);
+  }
+
+  set price(value: string) {
+    this.price$.next(value);
+  }
+
+  set time(value: string) {
+    this.time$.next(value);
+  }
+
+  get token() {
+    return this.token$.asObservable();
   }
 
   get instrumentsArr(): Observable<Search[]> {
@@ -167,8 +176,8 @@ export class RequestsService {
   getHistoricalPrices(): Observable<{ data: DateRange[] }> {
     return this.getDateRange('historicalPrices').pipe(
       tap(((response: { data: DateRange[] }) => {
-            this.historicalPrices$.next(response.data)
-        }))
+        this.historicalPrices$.next(response.data)
+      }))
     );
   }
 }

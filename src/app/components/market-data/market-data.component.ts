@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
-import { DateRange } from "../../models/trend.model";
 import { DatePipe } from "@angular/common";
 
 @Component({
@@ -11,7 +10,7 @@ import { DatePipe } from "@angular/common";
   styleUrl: './market-data.component.scss',
   providers: [DatePipe]
 })
-export class MarketDataComponent implements OnInit{
+export class MarketDataComponent implements OnInit {
   symbol: string = '';
   time: string = '';
   price: string = '';
@@ -35,7 +34,7 @@ export class MarketDataComponent implements OnInit{
     });
   }
 
-  formatDate(time: string): string {
+  private formatDate(time: string): string {
     return <string>this.datePipe.transform(time, 'MMM d, h:mm a', 'GMT');
   }
 

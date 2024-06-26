@@ -5,7 +5,7 @@ import { SearchComponent } from "./components/search/search.component";
 import { MarketDataComponent } from "./components/market-data/market-data.component";
 import { switchMap, tap } from "rxjs";
 import { DateRange } from "./models/trend.model";
-// import { RealTimeComponent } from "./components/real-time/real-time.component";
+import { RealTimeComponent } from "./components/real-time/real-time.component";
 import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 
 @Component({
@@ -15,7 +15,8 @@ import { HistoricalChartComponent } from "./components/historical-chart/historic
     CommonModule,
     SearchComponent,
     MarketDataComponent,
-    HistoricalChartComponent
+    HistoricalChartComponent,
+    RealTimeComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
