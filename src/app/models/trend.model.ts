@@ -4,7 +4,15 @@ export interface TokenResponse {
 
 export interface Search {
   id: string,
-  name: string,
-  type: string,
-  provider: string
+  symbol: string,
+  baseCurrency: string,
+}
+
+export interface DateRange {
+  "t": string,
+  "o": string,
+  "h": string,
+  "l": string,
+  "c": string,
+  "v": string
 }

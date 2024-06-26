@@ -12,6 +12,7 @@ export const appConfig: ApplicationConfig = {
 };
 
 export const URL = 'https://platform.fintacharts.com';
+export const URL_WS = 'wss://platform.fintacharts.com';
 
 export enum TOKEN_VARIABLES {
   USERNAME = 'r_test@fintatech.com',
@@ -20,5 +21,7 @@ export enum TOKEN_VARIABLES {
 
 export enum REQUESTS {
   TOKEN = 'identity/realms/{realm}/protocol/openid-connect/token',
-  SEARCH = 'api/instruments/v1/instruments'
+  SEARCH = 'api/instruments/v1/instruments',
+  DATE_RANGE = 'api/bars/v1/bars/count-back',
+  REAL_TIME_PRICE_WS = 'api/streaming/ws/v1/realtime'
 }
