@@ -50,16 +50,16 @@ export class HistoricalChartComponent implements OnInit {
 
   private updateChart(times: Date[], prices: string[]): void {
     if (this.chart) {
-      this.requestsService.dates.subscribe((dates) =>  {
-        this.chart.data.labels = dates
-      })
-      this.requestsService.prices.subscribe((prices) =>  {
-        this.chart.data.datasets[0].data = prices;
-      })
       this.chart.update();
     } else {
       this.createChart(times, prices);
     }
+    this.requestsService.dates.subscribe((dates) =>  {
+      this.chart.data.labels = dates
+    })
+    this.requestsService.prices.subscribe((prices) =>  {
+      this.chart.data.datasets[0].data = prices;
+    })
   }
 
   private createChart(times: Date[], prices: string[]) {
@@ -69,7 +69,7 @@ export class HistoricalChartComponent implements OnInit {
         labels: times,
         datasets: [
           {
-            label: this.symbol,
+            label: 'Price',
             data: prices,
             borderColor: '#0d47a1',
             backgroundColor: 'rgba(93, 175, 89, 0.1)',
