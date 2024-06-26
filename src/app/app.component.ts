@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RequestsService } from "./services/requests.service";
 import { SearchComponent } from "./components/search/search.component";
 import { MarketDataComponent } from "./components/market-data/market-data.component";
-import { switchMap, tap } from "rxjs";
-import { DateRange, Search } from "./models/trend.model";
+import { switchMap } from "rxjs";
 import { RealTimeComponent } from "./components/real-time/real-time.component";
 import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 
@@ -22,7 +21,7 @@ import { HistoricalChartComponent } from "./components/historical-chart/historic
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  private defaultSymbol = 'BTCUSD';
+  readonly defaultSymbol = 'BTCUSD';
 
   constructor(private requestsService: RequestsService) {
   }
@@ -30,7 +29,9 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.requestsService.makeAuthenticatedRequest().pipe(
       switchMap(() => {
+        this.requestsService.searchValue = this.defaultSymbol;
         this.requestsService.symbol = this.defaultSymbol;
+
         return this.requestsService.getInstruments();
       }),
       switchMap(() => {

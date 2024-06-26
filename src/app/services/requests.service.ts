@@ -19,6 +19,7 @@ export class RequestsService {
   private pricesArr$: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
   private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private searchValue$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor(private readonly http: HttpClient) {
   }
@@ -34,6 +35,10 @@ export class RequestsService {
 
   set instrumentId(id: string) {
     this.instrumentId$.next(id);
+  }
+
+  set searchValue(val: string) {
+    this.searchValue$.next(val);
   }
 
   set time(value: string) {
@@ -167,10 +172,9 @@ export class RequestsService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.token$.value}`
     });
-    const symbol = this.symbol$.value;
 
     const params = new HttpParams()
-      .set('symbol', symbol)
+      .set('symbol', this.searchValue$.value)
       .set('page', '1')
       .set('size', '30');
 
