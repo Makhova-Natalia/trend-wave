@@ -18,6 +18,7 @@ export class RequestsService {
   private timesArr$: BehaviorSubject<Date[]> = new BehaviorSubject<Date[]>([]);
   private pricesArr$: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
+  private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor(private readonly http: HttpClient) {
   }
@@ -29,6 +30,10 @@ export class RequestsService {
 
   set price(value: string) {
     this.price$.next(value);
+  }
+
+  set instrumentId(id: string) {
+    this.instrumentId$.next(id);
   }
 
   set time(value: string) {
@@ -106,7 +111,7 @@ export class RequestsService {
     return this.instrumentsArr.pipe(
       map((val: Search[]) => {
         const params = new HttpParams()
-          .set('instrumentId', val[0].id)
+          .set('instrumentId', this.instrumentId$.value ? this.instrumentId$.value : val[0].id)
           .set('provider', 'cryptoquote')
           .set('interval', '1');
 
