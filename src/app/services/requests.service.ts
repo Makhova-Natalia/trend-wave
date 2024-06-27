@@ -20,6 +20,7 @@ export class RequestsService {
   private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
   private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private searchValue$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private isShownChart$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
   constructor(
     private readonly http: HttpClient,
@@ -32,6 +33,10 @@ export class RequestsService {
 
   set price(value: string) {
     this.price$.next(value);
+  }
+
+  set historicalPrices(value: DateRange[]) {
+    this.historicalPrices$.next(value);
   }
 
   set instrumentId(id: string) {
@@ -70,6 +75,10 @@ export class RequestsService {
 
   get dates(): Observable<Date[]> {
     return this.timesArr$.asObservable();
+  }
+
+  get isShownChart(): Observable<boolean> {
+    return this.isShownChart$.asObservable();
   }
 
   get prices(): Observable<string[]> {
@@ -142,12 +151,12 @@ export class RequestsService {
         if (type === 'currentPrice') {
           const currentDate = new Date().toISOString();
           return params
-            .set('periodicity', 'day')
+            .set('periodicity', 'minute')
             .set('barsCount', '1')
             .set('date', currentDate);
         } else if (type === 'historicalPrices') {
           return params
-            .set('periodicity', 'minute')
+            .set('periodicity', 'day')
             .set('barsCount', '30');
         } else {
           throw new Error('Invalid type parameter');
@@ -167,6 +176,9 @@ export class RequestsService {
               return requestFn();
             })
           );
+        } else if(error.status === 500){
+          this.isShownChart$.next(false);
+          return []
         } else {
           return throwError(error);
         }
@@ -204,6 +216,7 @@ export class RequestsService {
   }
 
   private getDateRange(type: string): Observable<{ data: DateRange[] }> {
+    this.isShownChart$.next(true);
     const createRequest = (params: HttpParams): Observable<{ data: DateRange[] }> => {
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${this.token$.value}`
@@ -231,7 +244,10 @@ export class RequestsService {
   getHistoricalPrices(): Observable<{ data: DateRange[] }> {
     return this.getDateRange('historicalPrices').pipe(
       tap(((response: { data: DateRange[] }) => {
-        this.historicalPrices$.next(response.data)
+        if(!response.data.length) {
+          this.isShownChart$.next(false);
+        }
+        this.historicalPrices = response.data;
       }))
     );
   }

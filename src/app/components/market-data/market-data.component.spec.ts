@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MarketDataComponent } from './market-data.component';
+import { HttpClientModule } from "@angular/common/http";
 
 describe('MarketDataComponent', () => {
   let component: MarketDataComponent;
@@ -8,10 +9,13 @@ describe('MarketDataComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MarketDataComponent]
+      imports: [
+        MarketDataComponent,
+        HttpClientModule
+      ]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(MarketDataComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

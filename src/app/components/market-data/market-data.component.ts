@@ -41,7 +41,7 @@ export class MarketDataComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$$),
         tap((price: string) => {
           if (price) {
-            this.price = price;
+            this.price = parseFloat(price).toFixed(2);
           }
         })
       )

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HistoricalChartComponent } from './historical-chart.component';
+import { HttpClientModule } from "@angular/common/http";
 
 describe('HistoricalChartComponent', () => {
   let component: HistoricalChartComponent;
@@ -8,10 +9,13 @@ describe('HistoricalChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HistoricalChartComponent]
+      imports: [
+        HistoricalChartComponent,
+        HttpClientModule
+      ]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(HistoricalChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

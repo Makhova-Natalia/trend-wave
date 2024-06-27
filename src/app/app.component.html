@@ -4,5 +4,10 @@
     <app-real-time></app-real-time>
   </div>
   <app-market-data></app-market-data>
-  <app-historical-chart></app-historical-chart>
+  <div *ngIf="isHistoricalPrices; else errorTemplate">
+    <app-historical-chart></app-historical-chart>
+  </div>
+  <ng-template #errorTemplate>
+    <p>We're unable to load prices right now. Please try again later. Sorry for the inconvenience!</p>
+  </ng-template>
 </div>
