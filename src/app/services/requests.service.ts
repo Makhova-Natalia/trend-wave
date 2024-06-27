@@ -3,6 +3,7 @@ import { BehaviorSubject, catchError, map, Observable, switchMap, tap, throwErro
 import { DateRange, Search, TokenResponse } from "../models/trend.model";
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from "@angular/common/http";
 import { REQUESTS, TOKEN_VARIABLES, URL } from "../app.config";
+import { LocalStorageService } from "./local-storage.service";
 
 @Injectable({
   providedIn: 'root'
@@ -18,9 +19,14 @@ export class RequestsService {
   private timesArr$: BehaviorSubject<Date[]> = new BehaviorSubject<Date[]>([]);
   private pricesArr$: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private historicalPrices$: BehaviorSubject<DateRange[]> = new BehaviorSubject<DateRange[]>([]);
+  private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private searchValue$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  constructor(private readonly http: HttpClient) {
-  }
+  constructor(
+    private readonly http: HttpClient,
+    private localStorageService: LocalStorageService
+  ) {}
+
 
 
   set symbol(value: string) {
@@ -31,8 +37,20 @@ export class RequestsService {
     this.price$.next(value);
   }
 
+  set instrumentId(id: string) {
+    this.instrumentId$.next(id);
+  }
+
+  set searchValue(val: string) {
+    this.searchValue$.next(val);
+  }
+
   set time(value: string) {
     this.time$.next(value);
+  }
+
+  set token(value: string) {
+    this.token$.next(value);
   }
 
   set dates(date: Date) {
@@ -45,6 +63,14 @@ export class RequestsService {
     this.pricesArr$.next([...currentPrice, price]);
   }
 
+  set timesArr(arr: Date[]) {
+    this.timesArr$.next(arr)
+  }
+
+  set pricesArr(arr: string[]) {
+    this.pricesArr$.next(arr)
+  }
+
   get dates(): Observable<Date[]> {
     return this.timesArr$.asObservable();
   }
@@ -53,7 +79,11 @@ export class RequestsService {
     return this.pricesArr$.asObservable()
   }
 
-  get token() {
+  get instrumentId(): string {
+    return this.instrumentId$.value;
+  }
+
+  get token(): Observable<string> {
     return this.token$.asObservable();
   }
 
@@ -97,7 +127,8 @@ export class RequestsService {
     return this.http.post<TokenResponse>(tokenUrl, body.toString(), {headers})
       .pipe(
         tap((resp: TokenResponse) => {
-          this.token$.next(resp.access_token);
+          this.localStorageService.setData('token', resp.access_token)
+          this.token = resp.access_token;
         })
       );
   }
@@ -105,21 +136,22 @@ export class RequestsService {
   private createParamsForDateRange(type: string): Observable<HttpParams> {
     return this.instrumentsArr.pipe(
       map((val: Search[]) => {
+        let instrument = this.instrumentId$.value ? this.instrumentId$.value : val[0].id;
+        this.instrumentId$.next(instrument);
         const params = new HttpParams()
-          .set('instrumentId', val[0].id)
+          .set('instrumentId', instrument)
           .set('provider', 'cryptoquote')
           .set('interval', '1');
-
         if (type === 'currentPrice') {
           const currentDate = new Date().toISOString();
           return params
-            .set('periodicity', 'minute')
+            .set('periodicity', 'day')
             .set('barsCount', '1')
             .set('date', currentDate);
         } else if (type === 'historicalPrices') {
           return params
-            .set('periodicity', 'day')
-            .set('barsCount', '14');
+            .set('periodicity', 'minute')
+            .set('barsCount', '30');
         } else {
           throw new Error('Invalid type parameter');
         }
@@ -127,14 +159,15 @@ export class RequestsService {
     )
   }
 
-  private handleRequest<T>(request: Observable<T>): Observable<T> {
+  private handleRequest<T>(request: Observable<T>, requestFn: () => Observable<T>): Observable<T> {
     return request.pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           return this.getToken().pipe(
             switchMap((tokenResponse: TokenResponse) => {
-              this.token$.next(tokenResponse.access_token);
-              return request;
+              this.token = tokenResponse.access_token;
+              this.localStorageService.setData('token', tokenResponse.access_token);
+              return requestFn();
             })
           );
         } else {
@@ -145,25 +178,28 @@ export class RequestsService {
   }
 
   makeAuthenticatedRequest(): Observable<TokenResponse> {
-    const request = this.getToken();
+    const createRequest = (): Observable<TokenResponse> => {
+      return this.getToken();
+    };
 
-    return this.handleRequest(request);
+    return this.handleRequest(createRequest(), createRequest);
   }
 
   getInstruments(): Observable<{ data: Search[] }> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.token$.value}`
-    });
-    const symbol = this.symbol$.value;
+    const createRequest = (): Observable<{ data: Search[] }> => {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.token$.value}`
+      });
 
-    const params = new HttpParams()
-      .set('symbol', symbol)
-      .set('page', '1')
-      .set('size', '30');
+      const params = new HttpParams()
+        .set('symbol', this.searchValue$.value)
+        .set('page', '1')
+        .set('size', '30');
 
-    const request = this.http.get<{ data: Search[] }>(`${URL}/${REQUESTS.SEARCH}`, {headers, params})
+      return this.http.get<{ data: Search[] }>(`${URL}/${REQUESTS.SEARCH}`, { headers, params });
+    };
 
-    return this.handleRequest(request).pipe(
+    return this.handleRequest(createRequest(), createRequest).pipe(
       tap((response: { data: Search[] }) => {
         this.instruments$.next(response.data);
       })
@@ -171,17 +207,19 @@ export class RequestsService {
   }
 
   private getDateRange(type: string): Observable<{ data: DateRange[] }> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.token$.value}`
-    });
+    const createRequest = (params: HttpParams): Observable<{ data: DateRange[] }> => {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.token$.value}`
+      });
+      return this.http.get<{ data: DateRange[] }>(`${URL}/${REQUESTS.DATE_RANGE}`, { headers, params });
+    };
 
-    return this.createParamsForDateRange(type).pipe(
-      switchMap(params => {
-        const request = this.http.get<{ data: DateRange[] }>(`${URL}/${REQUESTS.DATE_RANGE}`, {headers, params})
-        return this.handleRequest(request);
-      })
-    )
+    let params: HttpParams = new HttpParams();
+
+    this.createParamsForDateRange(type).subscribe(v => params = v);
+    return this.handleRequest(createRequest(params), () => createRequest(params));
   }
+
 
   getCurrentPrice(): Observable<{ data: DateRange[] }> {
     return this.getDateRange('currentPrice').pipe(
