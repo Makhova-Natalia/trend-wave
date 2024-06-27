@@ -3,6 +3,7 @@ import { RequestsService } from "../../services/requests.service";
 import { Search } from "../../models/trend.model";
 import { CommonModule } from "@angular/common";
 import { Subject, takeUntil, tap } from "rxjs";
+import { RealTimeDataService } from "../../services/real-time-data.service";
 
 @Component({
   selector: 'app-search',
@@ -18,7 +19,10 @@ export class SearchComponent implements OnDestroy {
   filteredResults: Search[] = [];
   defaultSymbol = 'BTCUSD';
 
-  constructor(private requestService: RequestsService) {
+  constructor(
+    private requestService: RequestsService,
+    private realTimeService: RealTimeDataService
+  ) {
   }
 
   onSearch(event: any) {
@@ -37,6 +41,7 @@ export class SearchComponent implements OnDestroy {
   }
 
   onChangeData(result: Search) {
+    this.realTimeService.closeWebSocket();
     this.filteredResults = [];
     this.defaultSymbol = result.symbol;
     this.requestService.symbol = result.symbol;

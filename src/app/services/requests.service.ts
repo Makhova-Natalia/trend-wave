@@ -150,7 +150,7 @@ export class RequestsService {
             .set('date', currentDate);
         } else if (type === 'historicalPrices') {
           return params
-            .set('periodicity', 'day')
+            .set('periodicity', 'minute')
             .set('barsCount', '30');
         } else {
           throw new Error('Invalid type parameter');

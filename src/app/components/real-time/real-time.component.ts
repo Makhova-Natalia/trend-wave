@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
-import { REQUESTS, URL_WS } from "../../app.config";
-import { Subject, takeUntil } from "rxjs";
+import { Subject, takeUntil, tap } from "rxjs";
+import { RealTimeDataService } from "../../services/real-time-data.service";
 
 @Component({
   selector: 'app-real-time',
@@ -12,59 +12,37 @@ import { Subject, takeUntil } from "rxjs";
 })
 export class RealTimeComponent implements OnDestroy {
   private destroyed$$: Subject<void> = new Subject<void>();
+  private socket: WebSocket = new WebSocket('');
 
-  constructor(private requestsService: RequestsService) {
-  }
-
-  ngOnInit() {
+  constructor(
+    private requestsService: RequestsService,
+    private realTimeDataService: RealTimeDataService
+  ) {
   }
 
   subscribeToRealTimePrice() {
     let token: string = '';
+
     this.requestsService.token
       .pipe(
         takeUntil(this.destroyed$$)
       )
       .subscribe(t => token = t);
-    const URL = `${URL_WS}/${REQUESTS.REAL_TIME_PRICE_WS}?token=${token}`;
 
-    const socket = new WebSocket(URL);
+    if (this.realTimeDataService.isWebSocketNew()) {
+      this.realTimeDataService.getWebSocket(token)
+        .pipe(
+          takeUntil(this.destroyed$$),
+          tap((ws: WebSocket) => this.socket = ws)
+        ).subscribe();
+    }
 
-    socket.onopen = () => {
-      console.log('WebSocket connection opened.');
-      const message = {
-        type: "l1-subscription",
-        instrumentId: this.requestsService.instrumentId,
-        provider: "cryptoquote",
-        kinds: ["last"],
-        subscribe: true
-      };
-      socket.send(JSON.stringify(message));
-    };
 
-    socket.onmessage = (event) => {
-      console.log('Message from server: ', event.data);
-      const data = JSON.parse(event.data);
-
-      if (data.type === "l1-update" && data.last) {
-        this.requestsService.price = data.last.price;
-        this.requestsService.time = data.last.timestamp;
-        this.requestsService.dates = new Date(data.last.timestamp);
-        this.requestsService.prices = data.last.price
-      }
-    };
-
-    socket.onclose = () => {
-      console.log('WebSocket connection closed.');
-    };
-
-    socket.onerror = (error) => {
-      console.log('WebSocket error: ', error);
-    };
   }
 
   ngOnDestroy() {
     this.destroyed$$.next();
     this.destroyed$$.complete();
+    this.realTimeDataService.closeWebSocket();
   }
 }

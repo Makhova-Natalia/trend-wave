@@ -70,8 +70,7 @@ export class AppComponent implements OnInit, OnDestroy {
       switchMap(() => {
         return this.requestsService.getHistoricalPrices();
       })
-    ).subscribe(() => {
-    });
+    ).subscribe();
   }
 
   ngOnDestroy() {
