@@ -214,9 +214,10 @@ export class RequestsService {
       return this.http.get<{ data: DateRange[] }>(`${URL}/${REQUESTS.DATE_RANGE}`, { headers, params });
     };
 
-    return this.createParamsForDateRange(type).pipe(
-      switchMap(params => this.handleRequest(createRequest(params), () => createRequest(params)))
-    );
+    let params: HttpParams = new HttpParams();
+
+    this.createParamsForDateRange(type).subscribe(v => params = v);
+    return this.handleRequest(createRequest(params), () => createRequest(params));
   }
 
 
