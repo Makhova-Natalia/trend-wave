@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #222831;
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+
+  .top-section {
+    display: flex;
+    width: 800px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    > * {
+      margin-right: 20px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .top-section {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+
+      > * {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+    }
+  }
+}

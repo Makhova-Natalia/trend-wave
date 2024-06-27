@@ -90,9 +90,9 @@ export class HistoricalChartComponent implements OnInit, OnDestroy {
           {
             label: 'Price',
             data: prices,
-            borderColor: '#0d47a1',
+            borderColor: '#34495e',
             backgroundColor: 'rgba(93, 175, 89, 0.1)',
-            borderWidth: 1,
+            borderWidth: 3,
             fill: false,
           }
         ]
@@ -102,9 +102,21 @@ export class HistoricalChartComponent implements OnInit, OnDestroy {
         scales: {
           x: {
             type: 'time',
+            ticks: {
+              color: 'white',
+              font: {
+                size: 12,
+              }
+            },
           },
           y: {
             beginAtZero: true,
+            ticks: {
+              color: 'white',
+              font: {
+                size: 14,
+              }
+            },
           }
         },
         plugins: {
