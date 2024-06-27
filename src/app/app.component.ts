@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RequestsService } from "./services/requests.service";
 import { SearchComponent } from "./components/search/search.component";
 import { MarketDataComponent } from "./components/market-data/market-data.component";
-import { Subject, switchMap, takeUntil } from "rxjs";
+import { Subject, switchMap, takeUntil, tap } from "rxjs";
 import { RealTimeComponent } from "./components/real-time/real-time.component";
 import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 import { LocalStorageService } from "./services/local-storage.service";
@@ -24,6 +24,7 @@ import { LocalStorageService } from "./services/local-storage.service";
 export class AppComponent implements OnInit, OnDestroy {
   readonly defaultSymbol = 'BTCUSD';
   private destroyed$$: Subject<void> = new Subject<void>();
+  isHistoricalPrices: boolean = true;
 
   constructor(
     private requestsService: RequestsService,
@@ -31,6 +32,12 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.requestsService.isShownChart
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((val: boolean) => this.isHistoricalPrices = val)
+      )
+      .subscribe()
     if (this.localStorageService.isDataExist('token')) {
       this.requestsService.token = this.localStorageService.getData('token');
       this.setSymbols();

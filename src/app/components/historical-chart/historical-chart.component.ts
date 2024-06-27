@@ -39,6 +39,9 @@ export class HistoricalChartComponent implements OnInit, OnDestroy {
   }
 
   private setValuesForChart() {
+    this.requestsService.timesArr = [];
+    this.requestsService.pricesArr = [];
+
     this.requestsService.historicalPrices.pipe(
       takeUntil(this.destroyed$$),
       tap((response: DateRange[]) => {
@@ -143,6 +146,12 @@ export class HistoricalChartComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.chart) {
+      this.requestsService.timesArr = [];
+      this.requestsService.pricesArr = [];
+      this.requestsService.historicalPrices = [];
+      this.chart.destroy();
+    }
     this.destroyed$$.next();
     this.destroyed$$.complete();
   }
