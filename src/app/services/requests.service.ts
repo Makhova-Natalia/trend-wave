@@ -3,6 +3,7 @@ import { BehaviorSubject, catchError, map, Observable, switchMap, tap, throwErro
 import { DateRange, Search, TokenResponse } from "../models/trend.model";
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from "@angular/common/http";
 import { REQUESTS, TOKEN_VARIABLES, URL } from "../app.config";
+import { LocalStorageService } from "./local-storage.service";
 
 @Injectable({
   providedIn: 'root'
@@ -21,8 +22,11 @@ export class RequestsService {
   private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private searchValue$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  constructor(private readonly http: HttpClient) {
-  }
+  constructor(
+    private readonly http: HttpClient,
+    private localStorageService: LocalStorageService
+  ) {}
+
 
 
   set symbol(value: string) {
@@ -43,6 +47,10 @@ export class RequestsService {
 
   set time(value: string) {
     this.time$.next(value);
+  }
+
+  set token(value: string) {
+    this.token$.next(value);
   }
 
   set dates(date: Date) {
@@ -75,7 +83,7 @@ export class RequestsService {
     return this.instrumentId$.value;
   }
 
-  get token() {
+  get token(): Observable<string> {
     return this.token$.asObservable();
   }
 
@@ -119,7 +127,8 @@ export class RequestsService {
     return this.http.post<TokenResponse>(tokenUrl, body.toString(), {headers})
       .pipe(
         tap((resp: TokenResponse) => {
-          this.token$.next(resp.access_token);
+          this.localStorageService.setData('token', resp.access_token)
+          this.token = resp.access_token;
         })
       );
   }
@@ -156,7 +165,7 @@ export class RequestsService {
         if (error.status === 401) {
           return this.getToken().pipe(
             switchMap((tokenResponse: TokenResponse) => {
-              this.token$.next(tokenResponse.access_token);
+              this.token = tokenResponse.access_token;
               return request;
             })
           );

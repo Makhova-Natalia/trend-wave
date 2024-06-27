@@ -6,6 +6,7 @@ import { MarketDataComponent } from "./components/market-data/market-data.compon
 import { switchMap } from "rxjs";
 import { RealTimeComponent } from "./components/real-time/real-time.component";
 import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
+import { LocalStorageService } from "./services/local-storage.service";
 
 @Component({
   selector: 'app-root',
@@ -23,15 +24,41 @@ import { HistoricalChartComponent } from "./components/historical-chart/historic
 export class AppComponent implements OnInit {
   readonly defaultSymbol = 'BTCUSD';
 
-  constructor(private requestsService: RequestsService) {
-  }
+  constructor(
+    private requestsService: RequestsService,
+    private localStorageService: LocalStorageService
+  ) { }
 
   ngOnInit() {
+    if (this.localStorageService.isDataExist('token')) {
+      this.requestsService.token = this.localStorageService.getData('token');
+      this.setSymbols();
+      this.getDataWithExistedToken();
+    } else {
+      this.getDataWithNewToken();
+    }
+  }
+
+  private setSymbols(): void {
+    this.requestsService.searchValue = this.defaultSymbol;
+    this.requestsService.symbol = this.defaultSymbol;
+  }
+
+  private getDataWithExistedToken() {
+    this.requestsService.getInstruments().pipe(
+      switchMap(() => {
+        return this.requestsService.getCurrentPrice();
+      }),
+      switchMap(() => {
+        return this.requestsService.getHistoricalPrices();
+      })
+    ).subscribe();
+  }
+
+  private getDataWithNewToken() {
     this.requestsService.makeAuthenticatedRequest().pipe(
       switchMap(() => {
-        this.requestsService.searchValue = this.defaultSymbol;
-        this.requestsService.symbol = this.defaultSymbol;
-
+        this.setSymbols();
         return this.requestsService.getInstruments();
       }),
       switchMap(() => {
