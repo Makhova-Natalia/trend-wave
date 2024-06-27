@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
 import { DatePipe } from "@angular/common";
+import { Subject, takeUntil, tap } from "rxjs";
 
 @Component({
   selector: 'app-market-data',
@@ -10,32 +11,60 @@ import { DatePipe } from "@angular/common";
   styleUrl: './market-data.component.scss',
   providers: [DatePipe]
 })
-export class MarketDataComponent implements OnInit {
+export class MarketDataComponent implements OnInit, OnDestroy {
+  private destroyed$$: Subject<void> = new Subject<void>();
+
   symbol: string = '';
   time: string = '';
   price: string = '';
 
-  constructor(private requestsService: RequestsService, private datePipe: DatePipe) {
+  constructor(
+    private requestsService: RequestsService,
+    private datePipe: DatePipe
+  ) {
   }
 
   ngOnInit() {
-    this.requestsService.symbol.subscribe(val => {
-      this.symbol = val;
-    })
-    this.requestsService.price.subscribe(price => {
-      if (price) {
-        this.price = price;
-      }
-    });
-    this.requestsService.time.subscribe(time => {
-      if (time) {
-        this.time = this.formatDate(time);
-      }
-    });
+    this.setData();
+  }
+
+  private setData() {
+    this.requestsService.symbol
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((val: string) => this.symbol = val)
+      )
+      .subscribe();
+
+    this.requestsService.price
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((price: string) => {
+          if (price) {
+            this.price = price;
+          }
+        })
+      )
+      .subscribe();
+    this.requestsService.time
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((time: string) => {
+          if (time) {
+            this.time = this.formatDate(time);
+          }
+        })
+      )
+      .subscribe();
   }
 
   private formatDate(time: string): string {
     return <string>this.datePipe.transform(time, 'MMM d, h:mm a', 'GMT');
+  }
+
+  ngOnDestroy() {
+    this.destroyed$$.next();
+    this.destroyed$$.complete();
   }
 
 }

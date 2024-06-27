@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RequestsService } from "./services/requests.service";
 import { SearchComponent } from "./components/search/search.component";
 import { MarketDataComponent } from "./components/market-data/market-data.component";
-import { switchMap } from "rxjs";
+import { Subject, switchMap, takeUntil } from "rxjs";
 import { RealTimeComponent } from "./components/real-time/real-time.component";
 import { HistoricalChartComponent } from "./components/historical-chart/historical-chart.component";
 import { LocalStorageService } from "./services/local-storage.service";
@@ -21,8 +21,9 @@ import { LocalStorageService } from "./services/local-storage.service";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   readonly defaultSymbol = 'BTCUSD';
+  private destroyed$$: Subject<void> = new Subject<void>();
 
   constructor(
     private requestsService: RequestsService,
@@ -46,6 +47,7 @@ export class AppComponent implements OnInit {
 
   private getDataWithExistedToken() {
     this.requestsService.getInstruments().pipe(
+      takeUntil(this.destroyed$$),
       switchMap(() => {
         return this.requestsService.getCurrentPrice();
       }),
@@ -57,6 +59,7 @@ export class AppComponent implements OnInit {
 
   private getDataWithNewToken() {
     this.requestsService.makeAuthenticatedRequest().pipe(
+      takeUntil(this.destroyed$$),
       switchMap(() => {
         this.setSymbols();
         return this.requestsService.getInstruments();
@@ -69,5 +72,10 @@ export class AppComponent implements OnInit {
       })
     ).subscribe(() => {
     });
+  }
+
+  ngOnDestroy() {
+    this.destroyed$$.next();
+    this.destroyed$$.complete();
   }
 }

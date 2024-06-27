@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
 import { REQUESTS, URL_WS } from "../../app.config";
+import { Subject, takeUntil } from "rxjs";
 
 @Component({
   selector: 'app-real-time',
@@ -9,16 +10,22 @@ import { REQUESTS, URL_WS } from "../../app.config";
   templateUrl: './real-time.component.html',
   styleUrl: './real-time.component.scss',
 })
-export class RealTimeComponent {
+export class RealTimeComponent implements OnDestroy {
+  private destroyed$$: Subject<void> = new Subject<void>();
 
-  constructor(private requestsService: RequestsService) {}
+  constructor(private requestsService: RequestsService) {
+  }
 
   ngOnInit() {
   }
 
   subscribeToRealTimePrice() {
     let token: string = '';
-    this.requestsService.token.subscribe(t => token = t);
+    this.requestsService.token
+      .pipe(
+        takeUntil(this.destroyed$$)
+      )
+      .subscribe(t => token = t);
     const URL = `${URL_WS}/${REQUESTS.REAL_TIME_PRICE_WS}?token=${token}`;
 
     const socket = new WebSocket(URL);
@@ -54,5 +61,10 @@ export class RealTimeComponent {
     socket.onerror = (error) => {
       console.log('WebSocket error: ', error);
     };
+  }
+
+  ngOnDestroy() {
+    this.destroyed$$.next();
+    this.destroyed$$.complete();
   }
 }

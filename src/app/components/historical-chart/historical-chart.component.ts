@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { RequestsService } from "../../services/requests.service";
 import { Chart, registerables } from "chart.js/auto";
 import 'chartjs-adapter-date-fns';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { tap } from "rxjs";
+import { Subject, takeUntil, tap } from "rxjs";
 import { DateRange } from "../../models/trend.model";
 
 Chart.register(zoomPlugin);
@@ -16,8 +16,9 @@ Chart.register(zoomPlugin);
   templateUrl: './historical-chart.component.html',
   styleUrl: './historical-chart.component.scss',
 })
-export class HistoricalChartComponent implements OnInit {
+export class HistoricalChartComponent implements OnInit, OnDestroy {
   private symbol: string = '';
+  private destroyed$$: Subject<void> = new Subject<void>();
   chart: any;
 
   constructor(private requestsService: RequestsService) {
@@ -25,11 +26,21 @@ export class HistoricalChartComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.requestsService.symbol.subscribe(s => {
-      this.symbol = s;
-    })
+    this.requestsService.symbol
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((s: string) => {
+          this.symbol = s;
+        })
+      )
+      .subscribe();
 
+    this.setValuesForChart();
+  }
+
+  private setValuesForChart() {
     this.requestsService.historicalPrices.pipe(
+      takeUntil(this.destroyed$$),
       tap((response: DateRange[]) => {
         if (response.length) {
           const dates = response.map(data => {
@@ -43,9 +54,7 @@ export class HistoricalChartComponent implements OnInit {
           this.updateChart(dates, prices)
         }
       })
-    ).subscribe(() => {})
-
-
+    ).subscribe();
   }
 
   private updateChart(times: Date[], prices: string[]): void {
@@ -54,12 +63,22 @@ export class HistoricalChartComponent implements OnInit {
     } else {
       this.createChart(times, prices);
     }
-    this.requestsService.dates.subscribe((dates) =>  {
-      this.chart.data.labels = dates
-    })
-    this.requestsService.prices.subscribe((prices) =>  {
-      this.chart.data.datasets[0].data = prices;
-    })
+    this.requestsService.dates
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((dates: Date[]) => {
+          this.chart.data.labels = dates;
+        })
+      )
+      .subscribe();
+    this.requestsService.prices
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((prices: string[]) => {
+          this.chart.data.datasets[0].data = prices;
+        })
+      )
+      .subscribe()
   }
 
   private createChart(times: Date[], prices: string[]) {
@@ -109,5 +128,10 @@ export class HistoricalChartComponent implements OnInit {
         }
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.destroyed$$.next();
+    this.destroyed$$.complete();
   }
 }

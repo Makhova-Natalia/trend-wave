@@ -166,6 +166,7 @@ export class RequestsService {
           return this.getToken().pipe(
             switchMap((tokenResponse: TokenResponse) => {
               this.token = tokenResponse.access_token;
+              this.localStorageService.setData('token', tokenResponse.access_token)
               return request;
             })
           );
