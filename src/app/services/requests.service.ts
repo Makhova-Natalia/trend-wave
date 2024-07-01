@@ -21,6 +21,7 @@ export class RequestsService {
   private instrumentId$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private searchValue$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private isShownChart$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  private isLoading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
 
   constructor(
     private readonly http: HttpClient,
@@ -29,6 +30,10 @@ export class RequestsService {
 
   set symbol(value: string) {
     this.symbol$.next(value);
+  }
+
+  set isLoading(value: boolean) {
+    this.isLoading$.next(value)
   }
 
   set price(value: string) {
@@ -91,6 +96,10 @@ export class RequestsService {
 
   get token(): Observable<string> {
     return this.token$.asObservable();
+  }
+
+  get isLoading(): Observable<boolean> {
+    return this.isLoading$.asObservable();
   }
 
   get instrumentsArr(): Observable<Search[]> {

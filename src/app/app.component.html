@@ -3,11 +3,16 @@
     <app-search></app-search>
     <app-real-time></app-real-time>
   </div>
-  <app-market-data></app-market-data>
-  <div *ngIf="isHistoricalPrices; else errorTemplate">
-    <app-historical-chart></app-historical-chart>
+  <div *ngIf="isLoading" class="loader">
+    Loading...
   </div>
-  <ng-template #errorTemplate>
-    <p>We're unable to load prices right now. Please try again later. Sorry for the inconvenience!</p>
-  </ng-template>
+  <div *ngIf="!isLoading">
+    <app-market-data></app-market-data>
+    <div *ngIf="isHistoricalPrices; else errorTemplate">
+      <app-historical-chart></app-historical-chart>
+    </div>
+    <ng-template #errorTemplate>
+      <p class="not-chart">We're unable to load prices right now. Please try again later. Sorry for the inconvenience!</p>
+    </ng-template>
+  </div>
 </div>
