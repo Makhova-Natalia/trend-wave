@@ -3,8 +3,8 @@
     <app-search></app-search>
     <app-real-time></app-real-time>
   </div>
-  <div *ngIf="isLoading" class="loader">
-    Loading...
+  <div *ngIf="isLoading" class="spinner-container">
+    <div class="spinner"></div>
   </div>
   <div *ngIf="!isLoading">
     <app-market-data></app-market-data>
