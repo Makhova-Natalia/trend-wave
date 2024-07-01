@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy } from '@angular/core';
 import { RequestsService } from "../../services/requests.service";
 import { Search } from "../../models/trend.model";
 import { CommonModule } from "@angular/common";
@@ -18,10 +18,12 @@ export class SearchComponent implements OnDestroy {
   searchResults: Search[] = [];
   filteredResults: Search[] = [];
   defaultSymbol = 'BTCUSD';
+  isSearchResultsVisible: boolean = false;
 
   constructor(
     private requestService: RequestsService,
-    private realTimeService: RealTimeDataService
+    private realTimeService: RealTimeDataService,
+    private eRef: ElementRef
   ) {
   }
 
@@ -35,6 +37,7 @@ export class SearchComponent implements OnDestroy {
         tap(results => {
           this.searchResults = results.data;
           this.filteredResults = this.searchResults.slice(0, 10);
+          this.isSearchResultsVisible = true;
         })
       )
       .subscribe();
@@ -58,6 +61,14 @@ export class SearchComponent implements OnDestroy {
         takeUntil(this.destroyed$$)
       )
       .subscribe();
+    this.isSearchResultsVisible = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: Event) {
+    if (!this.eRef.nativeElement.contains(event.target)) {
+      this.isSearchResultsVisible = false;
+    }
   }
 
   ngOnDestroy() {
