@@ -11,7 +11,7 @@ export const appConfig: ApplicationConfig = {
   ]
 };
 
-export const URL = 'https://platform.fintacharts.com';
+export const URL = '/api';
 export const URL_WS = 'wss://platform.fintacharts.com';
 
 export enum TOKEN_VARIABLES {

@@ -1,11 +1,11 @@
 {
   "/api": {
     "target": "https://platform.fintacharts.com",
-    "secure": true,
+    "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug",
     "pathRewrite": {
       "^/api": ""
-    }
+    },
+    "logLevel": "debug"
   }
 }
