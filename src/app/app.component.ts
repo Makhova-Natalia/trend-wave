@@ -25,6 +25,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly defaultSymbol = 'BTCUSD';
   private destroyed$$: Subject<void> = new Subject<void>();
   isHistoricalPrices: boolean = true;
+  isLoading: boolean = true;
 
   constructor(
     private requestsService: RequestsService,
@@ -37,7 +38,14 @@ export class AppComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyed$$),
         tap((val: boolean) => this.isHistoricalPrices = val)
       )
-      .subscribe()
+      .subscribe();
+
+    this.requestsService.isLoading
+      .pipe(
+        takeUntil(this.destroyed$$),
+        tap((val: boolean) => this.isLoading = val)
+    ).subscribe();
+
     if (this.localStorageService.isDataExist('token')) {
       this.requestsService.token = this.localStorageService.getData('token');
       this.setSymbols();
@@ -61,7 +69,11 @@ export class AppComponent implements OnInit, OnDestroy {
       switchMap(() => {
         return this.requestsService.getHistoricalPrices();
       })
-    ).subscribe();
+    ).subscribe((resp) => {
+      if(resp.data.length) {
+        this.requestsService.isLoading = false;
+      }
+    });
   }
 
   private getDataWithNewToken() {
@@ -77,7 +89,11 @@ export class AppComponent implements OnInit, OnDestroy {
       switchMap(() => {
         return this.requestsService.getHistoricalPrices();
       })
-    ).subscribe();
+    ).subscribe((resp) => {
+      if(resp.data.length) {
+        this.requestsService.isLoading = false;
+      }
+    });
   }
 
   ngOnDestroy() {
